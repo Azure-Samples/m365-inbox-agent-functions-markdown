@@ -12,7 +12,7 @@ This markdown-only variant relies on managed MCP servers for Outlook and Teams t
 
 ## <img src="https://raw.githubusercontent.com/microsoft/fluentui-system-icons/main/assets/Wrench/SVG/ic_fluent_wrench_24_regular.svg" width="22" align="center"> Prerequisites
 
-- [uv](https://docs.astral.sh/uv/) (recommend Python 3.13+)
+- Python 3.13+ (the runtime package requires 3.13). Easiest install: [uv](https://docs.astral.sh/uv/) — `uv python install 3.13`
 - [Azure Functions CLI (v5 preview)](https://learn.microsoft.com/en-us/azure/azure-functions/functions-cli-develop-local?pivots=programming-language-python)
 - [Azure Developer CLI (`azd`)](https://learn.microsoft.com/en-us/azure/developer/azure-developer-cli/) for Azure deployment
 - For production: an Azure subscription, a Microsoft Foundry project/model deployment, and permission to authorize Microsoft 365 connectors
@@ -58,16 +58,10 @@ This markdown-only variant requires a deployed Connector Namespace plus authoriz
 
    ```bash
    curl -sSL https://aka.ms/func-cli/install.sh | bash -s -- --prerelease
-   func setup --features python
+   func5 setup --features python
    ```
 
-2. Install Python dependencies:
-
-   ```bash
-   uv sync
-   ```
-
-3. Deploy the Function App and managed MCP connectors:
+2. Deploy the Function App and managed MCP connectors:
 
    ```bash
    azd auth login
@@ -75,22 +69,22 @@ This markdown-only variant requires a deployed Connector Namespace plus authoriz
    azd up
    ```
 
-4. Authorize the Outlook and Teams connectors using the Connector Namespace portal URL from the deployment outputs.
+3. Authorize the Outlook and Teams connectors using the Connector Namespace portal URL from the deployment outputs.
 
-5. Start the host locally with deployed settings, or rely on the cloud timer:
+4. Start the host locally with deployed settings, or rely on the cloud timer:
 
    ```bash
    cp local.settings.json.example local.settings.json
-   uv run func run
+   func5 run
    ```
 
-6. Trigger immediately from terminal 2 instead of waiting for the timer:
+5. Trigger immediately from terminal 2 instead of waiting for the timer:
 
    ```bash
-   uv run python chat.py   # then pick 1 for inbox-triage
+   python chat.py   # then pick 1 for inbox-triage
    ```
 
-Success means real Microsoft 365 side effects: an Outlook reply or a Teams channel post. Keep the `func run` terminal visible for local logs, and use Application Insights `traces` for deployed runs.
+Success means real Microsoft 365 side effects: an Outlook reply or a Teams channel post. Keep the `func5 run` terminal visible for local logs, and use Application Insights `traces` for deployed runs.
 
 ## <img src="https://raw.githubusercontent.com/microsoft/fluentui-system-icons/main/assets/Code/SVG/ic_fluent_code_24_regular.svg" width="22" align="center"> Source Code
 
@@ -229,12 +223,12 @@ Managed connector action names may vary slightly as the Outlook and Teams MCP se
 **Run:**
 
 ```bash
-uv run python chat.py   # then pick 1
+python chat.py   # then pick 1
 ```
 
 **What you should see (deployed / connectors authorized):**
 - A real message appears in the configured Teams channel within about one minute.
-- The `func run` terminal or Application Insights `traces` shows a VIP classification and Teams channel-post MCP call.
+- The `func5 run` terminal or Application Insights `traces` shows a VIP classification and Teams channel-post MCP call.
 
 ### <img src="https://raw.githubusercontent.com/microsoft/fluentui-system-icons/main/assets/Warning/SVG/ic_fluent_warning_24_regular.svg" width="22" align="center"> 2. Incident alert becomes a briefing item
 
@@ -257,7 +251,7 @@ uv run python chat.py   # then pick 1
 **Run:**
 
 ```bash
-uv run python chat.py   # pick 1 for triage, then pick 2 for daily-briefing
+python chat.py   # pick 1 for triage, then pick 2 for daily-briefing
 ```
 
 **What you should see (deployed / connectors authorized):**
@@ -286,12 +280,12 @@ uv run python chat.py   # pick 1 for triage, then pick 2 for daily-briefing
 **Run:**
 
 ```bash
-uv run python chat.py   # then pick 1
+python chat.py   # then pick 1
 ```
 
 **What you should see (deployed / connectors authorized):**
 - Outlook sends or drafts a concise reply that acknowledges Friday and lists next steps.
-- The `func run` terminal or Application Insights `traces` shows the reply decision and Outlook MCP action.
+- The `func5 run` terminal or Application Insights `traces` shows the reply decision and Outlook MCP action.
 
 ## <img src="https://raw.githubusercontent.com/microsoft/fluentui-system-icons/main/assets/Edit/SVG/ic_fluent_edit_24_regular.svg" width="22" align="center"> Customizing Rules
 
@@ -350,7 +344,7 @@ Both repos define the **same three agents, same skills, same Bicep, same governa
 | Agent logic | LLM reasons from `.agent.md` + skills text | Same, **plus** custom `tools/*.py` functions |
 | `tools/` directory | ❌ none (by design) | ✅ ~5 Python tools (rule matching, triage actions, etc.) |
 | I/O path | MCP only (Outlook & Teams managed connectors) | MCP **or** local file fallback when MCP env vars unset |
-| Offline dev | Requires provisioned MCP | `uv run python chat.py` reads `sample-data/inbox/*.json`, writes `.eml`/`.md` to `out/` |
+| Offline dev | Requires provisioned MCP | `python chat.py` reads `sample-data/inbox/*.json`, writes `.eml`/`.md` to `out/` |
 | `function_app.py` | One line: `app = create_function_app()` | Identical one line (tools auto-discovered) |
 | Hand-written Python | ~1 line | ~1 line + ~300 across `tools/` |
 
