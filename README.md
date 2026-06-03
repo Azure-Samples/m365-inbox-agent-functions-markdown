@@ -39,6 +39,16 @@ Files most likely to contain personal/tenant information:
 
 Even in a private repo, never commit real secrets. Use Key Vault references or `azd env set` for production values.
 
+**Getting upstream updates** — your private copy is independent, so add this repo as an `upstream` remote once, then pull when you want fixes:
+
+```bash
+git remote add upstream https://github.com/Azure-Samples/m365-inbox-agent-functions-markdown.git
+git fetch upstream
+git merge upstream/main          # or: git rebase upstream/main
+```
+
+The Functions Serverless Agents Runtime is in preview, so expect occasional fixes worth pulling in. Your edits to `skills/`, `sample-data/`, and `infra/main.parameters.json` will typically merge cleanly.
+
 ## <img src="https://raw.githubusercontent.com/microsoft/fluentui-system-icons/main/assets/Rocket/SVG/ic_fluent_rocket_24_regular.svg" width="22" align="center"> Quickstart
 
 This markdown-only variant requires a deployed Connector Namespace plus authorized Outlook and Teams MCP connections. There is **no local file fallback by design**; the sample proves the declarative MCP path. To experiment locally without Azure, use the [Python sibling](https://github.com/Azure-Samples/m365-inbox-agent-functions-python), which adds offline tool fallbacks.
