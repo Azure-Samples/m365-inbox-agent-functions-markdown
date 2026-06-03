@@ -19,10 +19,13 @@ This markdown-only variant relies on managed MCP servers for Outlook and Teams t
 
 ## <img src="https://raw.githubusercontent.com/microsoft/fluentui-system-icons/main/assets/Shield/SVG/ic_fluent_shield_24_regular.svg" width="22" align="center"> Make it yours (private copy)
 
-Once you start editing rules or running against your real M365 tenant, you'll want a **private** copy. Public forks cannot be made private on GitHub. Use this repo as a template instead: click <kbd>Use this template</kbd> at the top of GitHub and choose **Private**, or with [GitHub CLI](https://cli.github.com/) (substitute your own owner and repo name for the angle-bracket placeholders):
+Once you start editing rules or running against your real M365 tenant, you'll want a **private** copy. Public forks cannot be made private on GitHub. Use this repo as a template instead: click <kbd>Use this template</kbd> at the top of GitHub and choose **Private**, or with [GitHub CLI](https://cli.github.com/):
 
 ```bash
-gh repo create <your-github-username>/<your-repo-name> \
+OWNER=your-github-username       # or your org
+REPO=your-repo-name
+
+gh repo create "$OWNER/$REPO" \
   --template Azure-Samples/m365-inbox-agent-functions-markdown \
   --private --clone
 ```
@@ -41,7 +44,7 @@ Even in a private repo, never commit real secrets. This sample uses **managed id
 **Getting upstream updates.** Sync your private copy from this repo with a single GitHub CLI command, then pull locally:
 
 ```bash
-gh repo sync <your-github-username>/<your-repo-name> --source Azure-Samples/m365-inbox-agent-functions-markdown
+gh repo sync "$OWNER/$REPO" --source Azure-Samples/m365-inbox-agent-functions-markdown
 git pull
 ```
 
