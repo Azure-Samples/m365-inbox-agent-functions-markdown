@@ -1,8 +1,8 @@
-# M365 Inbox Agent — Serverless Agents (Markdown-only)
+# M365 Inbox Agent: Serverless Agents (Markdown-only)
 
 🔗 [Python (with custom tools) →](https://github.com/Azure-Samples/m365-inbox-agent-functions-python)
 
-An opinionated inbox-triage sample for the **Azure Functions Serverless Agents Runtime (preview)**. Three timer-triggered agents read a Microsoft 365 inbox, decide what matters, send thoughtful replies, post urgent alerts to Teams, and suggest rule changes for a human to approve.
+An inbox-triage sample for the **Azure Functions Serverless Agents Runtime (preview)**. Three timer-triggered agents read a Microsoft 365 inbox, decide what matters, send replies, post urgent alerts to Teams, and suggest rule changes for a human to approve.
 
 This markdown-only variant relies on managed MCP servers for Outlook and Teams through Connector Namespace. The `sample-data/` fixtures are kept as documentation and shape references for what the agents see in production through the Outlook MCP connection.
 
@@ -18,7 +18,7 @@ This markdown-only variant relies on managed MCP servers for Outlook and Teams t
 
 ## <img src="https://raw.githubusercontent.com/microsoft/fluentui-system-icons/main/assets/Shield/SVG/ic_fluent_shield_24_regular.svg" width="22" align="center"> Make it yours (private copy)
 
-Once you start editing rules or running against your real M365 tenant, you'll want a **private** copy — public forks cannot be made private on GitHub. Use this repo as a template instead: click <kbd>Use this template</kbd> at the top of GitHub and choose **Private**, or with [GitHub CLI](https://cli.github.com/):
+Once you start editing rules or running against your real M365 tenant, you'll want a **private** copy. Public forks cannot be made private on GitHub. Use this repo as a template instead: click <kbd>Use this template</kbd> at the top of GitHub and choose **Private**, or with [GitHub CLI](https://cli.github.com/):
 
 ```bash
 gh repo create my-org/my-inbox-agent \
@@ -30,14 +30,14 @@ This creates an independent repo with no fork relationship, so accidental PRs ba
 
 Files most likely to contain personal/tenant information:
 
-- `skills/vip-rules.md`, `skills/triage-rules.md` — your VIPs and triage logic
-- `sample-data/inbox/*.json` — any real mail you paste in for testing
-- `local.settings.json`, `.env` — secrets and endpoints (**already gitignored**)
-- `infra/main.parameters.json` — subscription/tenant-specific values if you customize
+- `skills/vip-rules.md`, `skills/triage-rules.md`: your VIPs and triage logic
+- `sample-data/inbox/*.json`: any real mail you paste in for testing
+- `local.settings.json`, `.env`: secrets and endpoints (**already gitignored**)
+- `infra/main.parameters.json`: subscription/tenant-specific values if you customize
 
-Even in a private repo, never commit real secrets. This sample uses **managed identity** for Foundry and **Entra-authorized connectors** for Microsoft 365, so there are no app-managed credentials to leak — for any custom integrations you add, keep that pattern (managed identity → role assignment) rather than pasting keys.
+Even in a private repo, never commit real secrets. This sample uses **managed identity** for Foundry and **Entra-authorized connectors** for Microsoft 365, so there are no app-managed credentials to leak. For any custom integrations you add, keep that pattern (managed identity, then role assignment) rather than pasting keys.
 
-**Getting upstream updates** — sync your private copy from this repo with a single GitHub CLI command, then pull locally:
+**Getting upstream updates.** Sync your private copy from this repo with a single GitHub CLI command, then pull locally:
 
 ```bash
 gh repo sync my-org/my-inbox-agent --source Azure-Samples/m365-inbox-agent-functions-markdown
@@ -261,7 +261,7 @@ uv run python chat.py   # pick 1 for triage, then pick 2 for daily-briefing
 - The `TO_EMAIL` mailbox receives a briefing with severity, product, impact, and owner ask.
 - Application Insights `traces` shows the incident decision and briefing send.
 
-### <img src="https://raw.githubusercontent.com/microsoft/fluentui-system-icons/main/assets/Checkmark/SVG/ic_fluent_checkmark_24_regular.svg" width="22" align="center"> 3. Action-required mail gets a thoughtful reply
+### <img src="https://raw.githubusercontent.com/microsoft/fluentui-system-icons/main/assets/Checkmark/SVG/ic_fluent_checkmark_24_regular.svg" width="22" align="center"> 3. Action-required mail gets a reply
 
 **Goal:** verify the agent recognizes a response deadline and sends or drafts a grounded Outlook reply.
 
@@ -344,11 +344,11 @@ Both repos define the **same three agents, same skills, same Bicep, same governa
 | | **This repo (Markdown)** | [Python sibling](https://github.com/Azure-Samples/m365-inbox-agent-functions-python) |
 |---|---|---|
 | Agent logic | LLM reasons from `.agent.md` + skills text | Same, **plus** custom `tools/*.py` functions |
-| `tools/` directory | ❌ none — by design | ✅ ~5 Python tools (rule matching, triage actions, etc.) |
+| `tools/` directory | ❌ none (by design) | ✅ ~5 Python tools (rule matching, triage actions, etc.) |
 | I/O path | MCP only (Outlook & Teams managed connectors) | MCP **or** local file fallback when MCP env vars unset |
 | Offline dev | Requires provisioned MCP | `uv run python chat.py` reads `sample-data/inbox/*.json`, writes `.eml`/`.md` to `out/` |
 | `function_app.py` | One line: `app = create_function_app()` | Identical one line (tools auto-discovered) |
 | Hand-written Python | ~1 line | ~1 line + ~300 across `tools/` |
 
-**Pick this repo if** you want to see the runtime's declarative promise — production-shaped M365 agent with effectively zero hand-written code.
+**Pick this repo if** you want to see the runtime's declarative promise: a production-shaped M365 agent with effectively zero hand-written code.
 **Pick the Python sibling if** you want a code escape hatch for offline hacking, deterministic rule matching, or learning the SDK.
