@@ -2,7 +2,7 @@
 
 🔗 [Python (with custom tools) →](https://github.com/Azure-Samples/m365-inbox-agent-functions-python)
 
-**Think of it as your own 🦞 Claw for the business, wired into your inbox with your rules and managed M365 connectors.**
+**Think of it as [🦞 OpenClaw](https://github.com/openclaw/openclaw) for the business: a skills-driven agent that actually does things, but secured by Azure managed identity and Entra-authorized M365 connectors (no custom code surface to audit).**
 
 An inbox-triage sample for the **Azure Functions Serverless Agents Runtime (preview)**. Three timer-triggered agents read a Microsoft 365 inbox, decide what matters, send replies, post urgent alerts to Teams, and suggest rule changes for a human to approve.
 
