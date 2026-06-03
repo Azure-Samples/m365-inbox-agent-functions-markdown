@@ -8,54 +8,6 @@ This markdown-only variant relies on managed MCP servers for Outlook and Teams t
 
 > 📝 Want offline dev with custom Python tools? See the [Python sibling](https://github.com/Azure-Samples/m365-inbox-agent-functions-python). Full comparison at [the bottom](#-markdown-variant-vs-python-variant).
 
-## <img src="https://raw.githubusercontent.com/microsoft/fluentui-system-icons/main/assets/Building/SVG/ic_fluent_building_24_regular.svg" width="22" align="center"> Architecture
-
-```mermaid
-flowchart TD
-    User["Developer or operator"] --> Func["Azure Function App\nServerless Agents Runtime"]
-
-    subgraph FunctionApp["Function App"]
-        InboxAgent["Agent: inbox-triage\nTimer-triggered triage"]
-        BriefingAgent["Agent: daily-briefing\nDaily digest"]
-        RulesAgent["Agent: weekly-rule-suggestions\nHuman-in-the-loop tuning"]
-    end
-
-    Func --> FunctionApp
-    FunctionApp --> MCP["MCP layer\nConnector Namespace managed servers"]
-
-    subgraph M365["Microsoft 365 services"]
-        Outlook["Outlook\nInbox, mail send"]
-        Calendar["Calendar\nAvailability context"]
-        Teams["Teams Channel\nUrgent alerts"]
-    end
-
-    MCP --> Outlook
-    MCP --> Calendar
-    MCP --> Teams
-
-    Storage["Azure Storage\nTimer leases and state"] --> Func
-    Func --> AppInsights["Application Insights\nLogs and traces"]
-    Func --> Storage
-
-    InboxAgent --> MCP
-    BriefingAgent --> MCP
-    RulesAgent --> MCP
-    InboxAgent --> AppInsights
-    BriefingAgent --> AppInsights
-    RulesAgent --> AppInsights
-```
-
-## <img src="https://raw.githubusercontent.com/microsoft/fluentui-system-icons/main/assets/Flowchart/SVG/ic_fluent_flowchart_24_regular.svg" width="22" align="center"> How the building blocks work
-
-| Block | MCP action | Skill | Agent |
-|---|---|---|---|
-| Trigger on inbox | (timer in agent frontmatter) | `inbox-poll.md` | inbox-triage |
-| Read inbox | `outlook.list_messages` | `inbox-read.md` | all 3 |
-| Send email | `outlook.send_mail` / `reply_mail` | `email-reply.md` | all 3 |
-| Post to Teams | `teams.post_channel_message` | `teams-post.md` | inbox-triage, daily-briefing |
-
-Managed connector action names may vary slightly as the Outlook and Teams MCP servers evolve. Use the action names published by the connected MCP server when they differ from the examples above.
-
 ## <img src="https://raw.githubusercontent.com/microsoft/fluentui-system-icons/main/assets/Wrench/SVG/ic_fluent_wrench_24_regular.svg" width="22" align="center"> Prerequisites
 
 - [uv](https://docs.astral.sh/uv/) (recommend Python 3.13+)
@@ -171,6 +123,54 @@ Connector resources are deployed before they can access your mailbox or Teams ch
 4. Restart or rerun the agents after authorization. Until this is complete, MCP calls fail with authorization errors.
 
 Use the Connector Namespace portal URL for authorization, not just the generic Azure resource overview page.
+
+## <img src="https://raw.githubusercontent.com/microsoft/fluentui-system-icons/main/assets/Building/SVG/ic_fluent_building_24_regular.svg" width="22" align="center"> Architecture
+
+```mermaid
+flowchart TD
+    User["Developer or operator"] --> Func["Azure Function App\nServerless Agents Runtime"]
+
+    subgraph FunctionApp["Function App"]
+        InboxAgent["Agent: inbox-triage\nTimer-triggered triage"]
+        BriefingAgent["Agent: daily-briefing\nDaily digest"]
+        RulesAgent["Agent: weekly-rule-suggestions\nHuman-in-the-loop tuning"]
+    end
+
+    Func --> FunctionApp
+    FunctionApp --> MCP["MCP layer\nConnector Namespace managed servers"]
+
+    subgraph M365["Microsoft 365 services"]
+        Outlook["Outlook\nInbox, mail send"]
+        Calendar["Calendar\nAvailability context"]
+        Teams["Teams Channel\nUrgent alerts"]
+    end
+
+    MCP --> Outlook
+    MCP --> Calendar
+    MCP --> Teams
+
+    Storage["Azure Storage\nTimer leases and state"] --> Func
+    Func --> AppInsights["Application Insights\nLogs and traces"]
+    Func --> Storage
+
+    InboxAgent --> MCP
+    BriefingAgent --> MCP
+    RulesAgent --> MCP
+    InboxAgent --> AppInsights
+    BriefingAgent --> AppInsights
+    RulesAgent --> AppInsights
+```
+
+## <img src="https://raw.githubusercontent.com/microsoft/fluentui-system-icons/main/assets/Flowchart/SVG/ic_fluent_flowchart_24_regular.svg" width="22" align="center"> How the building blocks work
+
+| Block | MCP action | Skill | Agent |
+|---|---|---|---|
+| Trigger on inbox | (timer in agent frontmatter) | `inbox-poll.md` | inbox-triage |
+| Read inbox | `outlook.list_messages` | `inbox-read.md` | all 3 |
+| Send email | `outlook.send_mail` / `reply_mail` | `email-reply.md` | all 3 |
+| Post to Teams | `teams.post_channel_message` | `teams-post.md` | inbox-triage, daily-briefing |
+
+Managed connector action names may vary slightly as the Outlook and Teams MCP servers evolve. Use the action names published by the connected MCP server when they differ from the examples above.
 
 ## <img src="https://raw.githubusercontent.com/microsoft/fluentui-system-icons/main/assets/Beaker/SVG/ic_fluent_beaker_24_regular.svg" width="22" align="center"> Scenarios
 
