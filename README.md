@@ -307,7 +307,7 @@ For Bring Your Own Key / Bring Your Own Model scenarios, configure these values 
 ```bash
 AZURE_FUNCTIONS_AGENTS_PROVIDER=foundry
 FOUNDRY_PROJECT_ENDPOINT=https://<your-ai-services>.services.ai.azure.com/api/projects/<project>
-FOUNDRY_MODEL=gpt-5-mini
+FOUNDRY_MODEL=gpt-5.4-mini
 ```
 
 `azd up` wires these for you (`scripts/hydrate-local-settings.sh` copies them into `local.settings.json` for local dev). Auth uses managed identity in production and `DefaultAzureCredential` (`az login`) locally — no keys.
