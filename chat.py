@@ -1,4 +1,5 @@
 """Local test client for the M365 Inbox Agent function app."""
+
 import json
 import os
 import urllib.error

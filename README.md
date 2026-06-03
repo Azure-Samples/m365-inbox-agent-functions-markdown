@@ -8,7 +8,7 @@ An opinionated inbox-triage sample for the **Azure Functions Serverless Agents R
 
 This markdown-only variant relies on managed MCP servers for Outlook and Teams through Connector Namespace. The `sample-data/` fixtures are kept as documentation and shape references for what the agents see in production through the Outlook MCP connection.
 
-## Markdown variant vs Python variant
+## <img src="https://raw.githubusercontent.com/microsoft/fluentui-system-icons/main/assets/Mail/SVG/ic_fluent_mail_24_regular.svg" width="22" align="center"> Markdown variant vs Python variant
 
 Both repos define the **same three agents, same skills, same Bicep, same governance**. The difference is where the logic lives.
 
@@ -24,7 +24,7 @@ Both repos define the **same three agents, same skills, same Bicep, same governa
 **Pick this repo if** you want to see the runtime's declarative promise — production-shaped M365 agent with effectively zero hand-written code.
 **Pick the Python sibling if** you want a code escape hatch for offline hacking, deterministic rule matching, or learning the SDK.
 
-## Architecture
+## <img src="https://raw.githubusercontent.com/microsoft/fluentui-system-icons/main/assets/Building/SVG/ic_fluent_building_24_regular.svg" width="22" align="center"> Architecture
 
 ```mermaid
 flowchart TD
@@ -61,7 +61,7 @@ flowchart TD
     RulesAgent --> AppInsights
 ```
 
-## How the building blocks work
+## <img src="https://raw.githubusercontent.com/microsoft/fluentui-system-icons/main/assets/Flowchart/SVG/ic_fluent_flowchart_24_regular.svg" width="22" align="center"> How the building blocks work
 
 | Block | MCP action | Skill | Agent |
 |---|---|---|---|
@@ -72,7 +72,7 @@ flowchart TD
 
 Managed connector action names may vary slightly as the Outlook and Teams MCP servers evolve. Use the action names published by the connected MCP server when they differ from the examples above.
 
-## Prerequisites
+## <img src="https://raw.githubusercontent.com/microsoft/fluentui-system-icons/main/assets/Wrench/SVG/ic_fluent_wrench_24_regular.svg" width="22" align="center"> Prerequisites
 
 - [Python 3.13](https://www.python.org/downloads/)
 - [Azure Functions Core Tools](https://learn.microsoft.com/en-us/azure/azure-functions/functions-run-local)
@@ -80,25 +80,17 @@ Managed connector action names may vary slightly as the Outlook and Teams MCP se
 - Azurite or another `AzureWebJobsStorage` value for timer triggers
 - For production: an Azure subscription, a Microsoft Foundry project/model deployment, and permission to authorize Microsoft 365 connectors
 
-## Quickstart
+## <img src="https://raw.githubusercontent.com/microsoft/fluentui-system-icons/main/assets/Rocket/SVG/ic_fluent_rocket_24_regular.svg" width="22" align="center"> Quickstart
 
-This sample requires an authorized Outlook MCP connection to complete real inbox work. The fastest path is `azd up`, which provisions Connector Namespace plus Outlook and Teams MCP managed servers.
+This markdown-only variant requires a deployed Connector Namespace plus authorized Outlook and Teams MCP connections. There is **no local file fallback by design**; the sample proves the declarative MCP path. To experiment locally without Azure, use the [Python sibling](https://github.com/Azure-Samples/m365-inbox-agent-functions-python), which adds offline tool fallbacks.
 
-1. Install dependencies:
-
-   ```bash
-   python3 -m venv .venv
-   source .venv/bin/activate
-   pip install -r requirements.txt
-   ```
-
-2. Create local settings from the sample owned by the Functions app:
+1. Install dependencies from `requirements.txt`:
 
    ```bash
-   cp local.settings.json.example local.settings.json
+   uv sync
    ```
 
-3. For end-to-end behavior, deploy and authorize connectors:
+2. Deploy the Function App and managed MCP connectors:
 
    ```bash
    azd auth login
@@ -106,21 +98,24 @@ This sample requires an authorized Outlook MCP connection to complete real inbox
    azd up
    ```
 
-4. For pure-markdown local hacking without MCP wired, edit the `.agent.md` and `skills/*.md` files, then validate frontmatter and start the host:
+3. Authorize the Outlook and Teams connectors using the Connector Namespace portal URL from the deployment outputs.
+
+4. Start the host locally with deployed settings, or rely on the cloud timer:
 
    ```bash
-   func start
+   cp local.settings.json.example local.settings.json
+   uv run func start
    ```
 
-   The runtime will start, but Outlook or Teams action calls will fail clearly until MCP endpoints are configured and authorized. For an offline dev experience with sample-data fallback, use the Python sibling.
-
-5. In a second terminal, optionally run the local trigger client:
+5. Trigger immediately from terminal 2 instead of waiting for the timer:
 
    ```bash
-   python3 chat.py
+   uv run python chat.py   # then pick 1 for inbox-triage
    ```
 
-## Source Code
+Success means real Microsoft 365 side effects: an Outlook reply or a Teams channel post. Keep the `func start` terminal visible for local logs, and use Application Insights `traces` for deployed runs.
+
+## <img src="https://raw.githubusercontent.com/microsoft/fluentui-system-icons/main/assets/Code/SVG/ic_fluent_code_24_regular.svg" width="22" align="center"> Source Code
 
 ```text
 README.md                         This guide.
@@ -139,7 +134,7 @@ skills/*.md                       Reusable markdown skills that describe MCP usa
 infra/                            Azure resources created by azd.
 ```
 
-## Deploy to Azure
+## <img src="https://raw.githubusercontent.com/microsoft/fluentui-system-icons/main/assets/Cloud/SVG/ic_fluent_cloud_24_regular.svg" width="22" align="center"> Deploy to Azure
 
 1. Sign in:
 
@@ -165,7 +160,7 @@ infra/                            Azure resources created by azd.
    azd env get-values
    ```
 
-## What Gets Deployed
+## <img src="https://raw.githubusercontent.com/microsoft/fluentui-system-icons/main/assets/Cloud/SVG/ic_fluent_cloud_24_regular.svg" width="22" align="center"> What Gets Deployed
 
 - Azure Functions app on a serverless hosting plan
 - Azure Storage for host state, timer leases, and runtime state
@@ -175,7 +170,7 @@ infra/                            Azure resources created by azd.
 - Managed identity and RBAC assignments needed by the Function App
 - App settings for `TO_EMAIL`, MCP endpoints, Teams target IDs, and Foundry model settings
 
-## Authorize Connectors
+## <img src="https://raw.githubusercontent.com/microsoft/fluentui-system-icons/main/assets/Key/SVG/ic_fluent_key_24_regular.svg" width="22" align="center"> Authorize Connectors
 
 Connector resources are deployed before they can access your mailbox or Teams channel. Complete this one-time step after `azd up`:
 
@@ -186,51 +181,94 @@ Connector resources are deployed before they can access your mailbox or Teams ch
 
 Use the Connector Namespace portal URL for authorization, not just the generic Azure resource overview page.
 
-## Scenarios
+## <img src="https://raw.githubusercontent.com/microsoft/fluentui-system-icons/main/assets/Beaker/SVG/ic_fluent_beaker_24_regular.svg" width="22" align="center"> Scenarios
 
-### 1. VIP urgent mail posts to Teams
+### <img src="https://raw.githubusercontent.com/microsoft/fluentui-system-icons/main/assets/Star/SVG/ic_fluent_star_24_regular.svg" width="22" align="center"> 1. VIP urgent mail posts to Teams
 
-Input shape reference (`sample-data/inbox/01-vip-urgent.json`):
+**Goal:** verify the agent recognizes VIP urgency and posts to the authorized Teams channel.
+
+**Setup:** send or keep a similar unread message in the connected Outlook inbox. `sample-data/inbox/01-vip-urgent.json` shows the expected shape.
+
+<details><summary>What's in the message</summary>
 
 ```json
 {
   "subject": "URGENT: Customer renewal blocker needs decision today",
   "from": { "emailAddress": { "name": "Morgan Lee", "address": "vip-name@example.com" } },
-  "isRead": false
+  "body": { "content": "...blocked on the discount approval. We need a decision today..." }
 }
 ```
 
-Expected action: `inbox-triage` recognizes the VIP sender and urgency, then posts a Teams alert with the blocker summary through the Teams MCP channel-post action.
+</details>
 
-### 2. Incident alert becomes a briefing item
+**Run:**
 
-Input shape reference (`sample-data/inbox/03-incident-alert.json`):
+```bash
+uv run python chat.py   # then pick 1
+```
+
+**What you should see (deployed / connectors authorized):**
+- A real message appears in the configured Teams channel within about one minute.
+- The `func start` terminal or Application Insights `traces` shows a VIP classification and Teams channel-post MCP call.
+
+### <img src="https://raw.githubusercontent.com/microsoft/fluentui-system-icons/main/assets/Warning/SVG/ic_fluent_warning_24_regular.svg" width="22" align="center"> 2. Incident alert becomes a briefing item
+
+**Goal:** verify a P1 incident is escalated to Teams and summarized in the daily briefing.
+
+**Setup:** send or keep a similar unread incident message in Outlook. `sample-data/inbox/03-incident-alert.json` shows the expected shape.
+
+<details><summary>What's in the message</summary>
 
 ```json
 {
   "subject": "P1 IcM: Checkout API elevated failures",
   "from": { "emailAddress": { "name": "Incident Bot", "address": "incident.bot@contoso.example" } },
-  "isRead": false
+  "body": { "content": "Severity: P1... Product: Checkout API... Impact: 18%..." }
 }
 ```
 
-Expected action: `inbox-triage` escalates the P1 incident to Teams, while `daily-briefing` includes the incident, product, severity, and owner ask in the next digest.
+</details>
 
-### 3. Action-required mail gets a thoughtful reply
+**Run:**
 
-Input shape reference (`sample-data/inbox/05-action-required.json`):
+```bash
+uv run python chat.py   # pick 1 for triage, then pick 2 for daily-briefing
+```
+
+**What you should see (deployed / connectors authorized):**
+- A Teams alert appears for the P1 incident.
+- The `TO_EMAIL` mailbox receives a briefing with severity, product, impact, and owner ask.
+- Application Insights `traces` shows the incident decision and briefing send.
+
+### <img src="https://raw.githubusercontent.com/microsoft/fluentui-system-icons/main/assets/Checkmark/SVG/ic_fluent_checkmark_24_regular.svg" width="22" align="center"> 3. Action-required mail gets a thoughtful reply
+
+**Goal:** verify the agent recognizes a response deadline and sends or drafts a grounded Outlook reply.
+
+**Setup:** send or keep a similar unread action-required message in Outlook. `sample-data/inbox/05-action-required.json` shows the expected shape.
+
+<details><summary>What's in the message</summary>
 
 ```json
 {
   "subject": "Action required: Review launch FAQ by Friday",
   "from": { "emailAddress": { "name": "Priya Patel", "address": "priya.patel@contoso.example" } },
-  "isRead": false
+  "body": { "content": "Could you review the launch FAQ by Friday..." }
 }
 ```
 
-Expected action: `inbox-triage` drafts or sends a concise reply through Outlook MCP, acknowledging the deadline and listing grounded next steps.
+</details>
 
-## Customizing Rules
+**Run:**
+
+```bash
+uv run python chat.py   # then pick 1
+```
+
+**What you should see (deployed / connectors authorized):**
+- Outlook sends or drafts a concise reply that acknowledges Friday and lists next steps.
+- The `func start` terminal or Application Insights `traces` shows the reply decision and Outlook MCP action.
+
+## <img src="https://raw.githubusercontent.com/microsoft/fluentui-system-icons/main/assets/Edit/SVG/ic_fluent_edit_24_regular.svg" width="22" align="center"> Customizing Rules
 
 Edit `skills/vip-rules.md` to change who counts as a VIP, what should be skipped, and which topics require Teams escalation. Redeploy after changing production rules:
 
@@ -240,7 +278,7 @@ azd deploy
 
 The `weekly-rule-suggestions` agent reviews recent decisions and suggests small policy changes. Treat those suggestions as human-in-the-loop recommendations: copy only the changes you approve into `skills/vip-rules.md`, review them, then redeploy.
 
-## Using Microsoft Foundry (BYOK)
+## <img src="https://raw.githubusercontent.com/microsoft/fluentui-system-icons/main/assets/Cloud/SVG/ic_fluent_cloud_24_regular.svg" width="22" align="center"> Using Microsoft Foundry (BYOK)
 
 For Bring Your Own Key / Bring Your Own Model scenarios, configure these values locally or let `azd up` wire them from Bicep outputs:
 
@@ -251,7 +289,7 @@ AZURE_AI_PROJECT_ENDPOINT=https://<your-ai-services>.services.ai.azure.com/api/p
 
 The agents use `MODEL_DEPLOYMENT_NAME` to select the deployed model and `AZURE_AI_PROJECT_ENDPOINT` to reach your Foundry project. Set connector endpoint values for deployed Microsoft 365 actions.
 
-## Cleanup
+## <img src="https://raw.githubusercontent.com/microsoft/fluentui-system-icons/main/assets/Broom/SVG/ic_fluent_broom_24_regular.svg" width="22" align="center"> Cleanup
 
 Delete Azure resources when you are finished:
 
@@ -259,7 +297,7 @@ Delete Azure resources when you are finished:
 azd down --purge
 ```
 
-## Troubleshooting
+## <img src="https://raw.githubusercontent.com/microsoft/fluentui-system-icons/main/assets/Bug/SVG/ic_fluent_bug_24_regular.svg" width="22" align="center"> Troubleshooting
 
 | Symptom | Try this |
 | --- | --- |
@@ -269,7 +307,7 @@ azd down --purge
 | Local action calls fail | Expected until Outlook and Teams MCP endpoints are configured and authorized. Use local runs for markdown/frontmatter validation, or use the Python sibling for offline sample-data fallback. |
 | Manual trigger returns 404 | Confirm the Functions host is running and agent function names are `inbox-triage`, `daily-briefing`, and `weekly-rule-suggestions`. |
 
-## Learn More
+## <img src="https://raw.githubusercontent.com/microsoft/fluentui-system-icons/main/assets/Book/SVG/ic_fluent_book_24_regular.svg" width="22" align="center"> Learn More
 
 - [Serverless agents runtime in Azure Functions](https://learn.microsoft.com/en-us/azure/azure-functions/functions-serverless-agents-runtime)
 - [Tutorial: Host an MCP server on Azure Functions](https://learn.microsoft.com/en-us/azure/azure-functions/functions-mcp-tutorial)
