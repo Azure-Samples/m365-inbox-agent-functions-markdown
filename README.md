@@ -71,10 +71,13 @@ This markdown-only variant requires a deployed Connector Namespace plus authoriz
 
 3. Authorize the Outlook and Teams connectors using the Connector Namespace portal URL from the deployment outputs.
 
-4. Start the host locally with deployed settings, or rely on the cloud timer:
+4. Provision Foundry (no app deploy) and hydrate `local.settings.json` from azd outputs. Auth uses your `az login` identity (no keys):
 
    ```bash
-   cp local.settings.json.example local.settings.json
+   azd auth login
+   azd provision                                   # ~6–10 min
+   az login                                        # one-time, for DefaultAzureCredential
+   ./scripts/hydrate-local-settings.sh
    func5 run
    ```
 
@@ -297,16 +300,21 @@ azd deploy
 
 The `weekly-rule-suggestions` agent reviews recent decisions and suggests small policy changes. Treat those suggestions as human-in-the-loop recommendations: copy only the changes you approve into `skills/vip-rules.md`, review them, then redeploy.
 
-## <img src="https://raw.githubusercontent.com/microsoft/fluentui-system-icons/main/assets/Cloud/SVG/ic_fluent_cloud_24_regular.svg" width="22" align="center"> Using Microsoft Foundry (BYOK)
+## <img src="https://raw.githubusercontent.com/microsoft/fluentui-system-icons/main/assets/Cloud/SVG/ic_fluent_cloud_24_regular.svg" width="22" align="center"> Choosing a model provider
 
 For Bring Your Own Key / Bring Your Own Model scenarios, configure these values locally or let `azd up` wire them from Bicep outputs:
 
 ```bash
-MODEL_DEPLOYMENT_NAME=gpt-5-mini
-AZURE_AI_PROJECT_ENDPOINT=https://<your-ai-services>.services.ai.azure.com/api/projects/<project>
+AZURE_FUNCTIONS_AGENTS_PROVIDER=foundry
+FOUNDRY_PROJECT_ENDPOINT=https://<your-ai-services>.services.ai.azure.com/api/projects/<project>
+FOUNDRY_MODEL=gpt-5-mini
 ```
 
-The agents use `MODEL_DEPLOYMENT_NAME` to select the deployed model and `AZURE_AI_PROJECT_ENDPOINT` to reach your Foundry project. Set connector endpoint values for deployed Microsoft 365 actions.
+`azd up` wires these for you (`scripts/hydrate-local-settings.sh` copies them into `local.settings.json` for local dev). Auth uses managed identity in production and `DefaultAzureCredential` (`az login`) locally — no keys.
+
+> **Note on GitHub Models for free local dev:** the runtime calls the OpenAI **Responses API** (`/responses`), which GitHub Models does not implement (`/chat/completions` only). Tracking with the runtime team.
+
+Set connector endpoint values for deployed Microsoft 365 actions.
 
 ## <img src="https://raw.githubusercontent.com/microsoft/fluentui-system-icons/main/assets/Broom/SVG/ic_fluent_broom_24_regular.svg" width="22" align="center"> Cleanup
 

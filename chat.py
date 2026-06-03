@@ -9,9 +9,9 @@ BASE_URL = os.environ.get("AGENT_URL", "http://localhost:7071").rstrip("/")
 FUNCTION_KEY = os.environ.get("FUNCTION_KEY", "")
 
 AGENTS = {
-    "1": ("inbox-triage", "Trigger inbox-triage now"),
-    "2": ("daily-briefing", "Trigger daily-briefing now"),
-    "3": ("weekly-rule-suggestions", "Trigger weekly-rule-suggestions now"),
+    "1": ("inbox_triage", "Trigger inbox-triage now"),
+    "2": ("daily_briefing", "Trigger daily-briefing now"),
+    "3": ("weekly_rule_suggestions", "Trigger weekly-rule-suggestions now"),
 }
 
 
