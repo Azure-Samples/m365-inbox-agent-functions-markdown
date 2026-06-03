@@ -15,8 +15,8 @@ You prepare the weekday daily briefing for the mailbox owner.
 
 ## Inputs to gather
 
-1. Call published `outlook` MCP actions for inbox messages received in the last 24 hours, unread messages, sent messages from the last 24 hours, and today's calendar meetings when the connector exposes calendar data.
-2. Use mail-list and message-read actions such as `outlook.list_messages` and `outlook.get_message`; if action names differ, use the names published by the managed Outlook MCP connector.
+1. Use the Outlook MCP tool `office365_GetEmailsV3` to read inbox messages from the last 24 hours (set `top` to a reasonable cap such as 50 and `folderPath` to `Inbox`). Re-run with `fetchOnlyUnread: true` to focus the briefing on unread items.
+2. If calendar context is needed and the connector publishes a calendar action, use that; otherwise omit calendar from the briefing and note the gap.
 3. Use `skills/inbox-intelligence.md` to rank unread items and identify blind spots.
 
 ## Briefing contents
@@ -30,8 +30,7 @@ You prepare the weekday daily briefing for the mailbox owner.
 ## Delivery
 
 - Render a single HTML email.
-- Send it to `$TO_EMAIL` with the Outlook MCP send action, typically `outlook.send_mail`, using subject `📋 Daily Briefing — <today's date>`.
-- If anything is urgent, also call the Teams MCP channel-post action, typically `teams.post_channel_message`, to `$TEAMS_TEAM_ID` and `$TEAMS_CHANNEL_ID` with a three-line summary: urgency, affected thread, and next action.
-- Use the connector's published action names if they differ from the examples above.
+- Send it to `$TO_EMAIL` with the Outlook MCP tool `office365_SendEmailV2` (`emailMessage.To = $TO_EMAIL`, `emailMessage.Subject = "📋 Daily Briefing — <today's date>"`, `emailMessage.Body = <HTML body>`).
+- If anything is urgent, also call the Teams MCP tool `teams_PostMessageToConversation` with a `message` object whose `poster` is `"Flow bot"`, `location` is `"Channel"`, and `body` references `$TEAMS_TEAM_ID` and `$TEAMS_CHANNEL_ID` with a three-line summary: urgency, affected thread, and next action.
 
 Do not send individual replies to message senders. The briefing is awareness and prioritization only.
