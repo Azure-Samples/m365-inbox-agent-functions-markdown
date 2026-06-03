@@ -6,11 +6,6 @@ trigger:
   args:
     schedule: "0 0 8 * * 1-5"
 mcp: true
-skills:
-  - skills/inbox-read.md
-  - skills/email-reply.md
-  - skills/teams-post.md
-  - skills/inbox-intelligence.md
 metadata:
   scenario: "daily-briefing"
   emoji: "📋"

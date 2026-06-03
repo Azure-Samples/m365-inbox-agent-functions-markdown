@@ -6,11 +6,6 @@ trigger:
   args:
     schedule: "0 0 18 * * 0"
 mcp: true
-skills:
-  - skills/vip-rules.md
-  - skills/inbox-read.md
-  - skills/inbox-intelligence.md
-  - skills/rule-suggestions.md
 metadata:
   scenario: "weekly-rule-suggestions"
   emoji: "🧠"
