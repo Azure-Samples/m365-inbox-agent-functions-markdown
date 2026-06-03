@@ -8,6 +8,22 @@ An opinionated inbox-triage sample for the **Azure Functions Serverless Agents R
 
 This markdown-only variant relies on managed MCP servers for Outlook and Teams through Connector Namespace. The `sample-data/` fixtures are kept as documentation and shape references for what the agents see in production through the Outlook MCP connection.
 
+## Markdown variant vs Python variant
+
+Both repos define the **same three agents, same skills, same Bicep, same governance**. The difference is where the logic lives.
+
+| | **This repo (Markdown)** | [Python sibling](https://github.com/Azure-Samples/m365-inbox-agent-functions-python) |
+|---|---|---|
+| Agent logic | LLM reasons from `.agent.md` + skills text | Same, **plus** custom `tools/*.py` functions |
+| `tools/` directory | ❌ none — by design | ✅ ~5 Python tools (rule matching, triage actions, etc.) |
+| I/O path | MCP only (Outlook & Teams managed connectors) | MCP **or** local file fallback when MCP env vars unset |
+| Offline dev | Requires provisioned MCP | `python chat.py` reads `sample-data/inbox/*.json`, writes `.eml`/`.md` to `out/` |
+| `function_app.py` | One line: `app = create_function_app()` | Identical one line (tools auto-discovered) |
+| Hand-written Python | ~1 line | ~1 line + ~300 across `tools/` |
+
+**Pick this repo if** you want to see the runtime's declarative promise — production-shaped M365 agent with effectively zero hand-written code.
+**Pick the Python sibling if** you want a code escape hatch for offline hacking, deterministic rule matching, or learning the SDK.
+
 ## Architecture
 
 ```mermaid
