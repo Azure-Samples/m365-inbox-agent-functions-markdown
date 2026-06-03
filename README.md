@@ -59,7 +59,7 @@ Managed connector action names may vary slightly as the Outlook and Teams MCP se
 ## <img src="https://raw.githubusercontent.com/microsoft/fluentui-system-icons/main/assets/Wrench/SVG/ic_fluent_wrench_24_regular.svg" width="22" align="center"> Prerequisites
 
 - [uv](https://docs.astral.sh/uv/) (recommend Python 3.13+)
-- [Azure Functions Core Tools](https://learn.microsoft.com/en-us/azure/azure-functions/functions-run-local)
+- [Azure Functions CLI (v5 preview)](https://learn.microsoft.com/en-us/azure/azure-functions/functions-cli-develop-local?pivots=programming-language-python)
 - [Azure Developer CLI (`azd`)](https://learn.microsoft.com/en-us/azure/developer/azure-developer-cli/) for Azure deployment
 - Azurite or another `AzureWebJobsStorage` value for timer triggers
 - For production: an Azure subscription, a Microsoft Foundry project/model deployment, and permission to authorize Microsoft 365 connectors
@@ -68,13 +68,20 @@ Managed connector action names may vary slightly as the Outlook and Teams MCP se
 
 This markdown-only variant requires a deployed Connector Namespace plus authorized Outlook and Teams MCP connections. There is **no local file fallback by design**; the sample proves the declarative MCP path. To experiment locally without Azure, use the [Python sibling](https://github.com/Azure-Samples/m365-inbox-agent-functions-python), which adds offline tool fallbacks.
 
-1. Install dependencies from `requirements.txt`:
+1. Install the v5 Functions CLI and the Python workload (one-time):
+
+   ```bash
+   curl -sSL https://aka.ms/func-cli/install.sh | bash -s -- --prerelease
+   func setup --features python
+   ```
+
+2. Install Python dependencies:
 
    ```bash
    uv sync
    ```
 
-2. Deploy the Function App and managed MCP connectors:
+3. Deploy the Function App and managed MCP connectors:
 
    ```bash
    azd auth login
@@ -82,22 +89,22 @@ This markdown-only variant requires a deployed Connector Namespace plus authoriz
    azd up
    ```
 
-3. Authorize the Outlook and Teams connectors using the Connector Namespace portal URL from the deployment outputs.
+4. Authorize the Outlook and Teams connectors using the Connector Namespace portal URL from the deployment outputs.
 
-4. Start the host locally with deployed settings, or rely on the cloud timer:
+5. Start the host locally with deployed settings, or rely on the cloud timer:
 
    ```bash
    cp local.settings.json.example local.settings.json
-   uv run func start
+   uv run func run
    ```
 
-5. Trigger immediately from terminal 2 instead of waiting for the timer:
+6. Trigger immediately from terminal 2 instead of waiting for the timer:
 
    ```bash
    uv run python chat.py   # then pick 1 for inbox-triage
    ```
 
-Success means real Microsoft 365 side effects: an Outlook reply or a Teams channel post. Keep the `func start` terminal visible for local logs, and use Application Insights `traces` for deployed runs.
+Success means real Microsoft 365 side effects: an Outlook reply or a Teams channel post. Keep the `func run` terminal visible for local logs, and use Application Insights `traces` for deployed runs.
 
 ## <img src="https://raw.githubusercontent.com/microsoft/fluentui-system-icons/main/assets/Code/SVG/ic_fluent_code_24_regular.svg" width="22" align="center"> Source Code
 
@@ -193,7 +200,7 @@ uv run python chat.py   # then pick 1
 
 **What you should see (deployed / connectors authorized):**
 - A real message appears in the configured Teams channel within about one minute.
-- The `func start` terminal or Application Insights `traces` shows a VIP classification and Teams channel-post MCP call.
+- The `func run` terminal or Application Insights `traces` shows a VIP classification and Teams channel-post MCP call.
 
 ### <img src="https://raw.githubusercontent.com/microsoft/fluentui-system-icons/main/assets/Warning/SVG/ic_fluent_warning_24_regular.svg" width="22" align="center"> 2. Incident alert becomes a briefing item
 
@@ -250,7 +257,7 @@ uv run python chat.py   # then pick 1
 
 **What you should see (deployed / connectors authorized):**
 - Outlook sends or drafts a concise reply that acknowledges Friday and lists next steps.
-- The `func start` terminal or Application Insights `traces` shows the reply decision and Outlook MCP action.
+- The `func run` terminal or Application Insights `traces` shows the reply decision and Outlook MCP action.
 
 ## <img src="https://raw.githubusercontent.com/microsoft/fluentui-system-icons/main/assets/Edit/SVG/ic_fluent_edit_24_regular.svg" width="22" align="center"> Customizing Rules
 
