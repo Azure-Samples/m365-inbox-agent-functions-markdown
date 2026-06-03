@@ -58,7 +58,7 @@ Managed connector action names may vary slightly as the Outlook and Teams MCP se
 
 ## <img src="https://raw.githubusercontent.com/microsoft/fluentui-system-icons/main/assets/Wrench/SVG/ic_fluent_wrench_24_regular.svg" width="22" align="center"> Prerequisites
 
-- [Python 3.13](https://www.python.org/downloads/)
+- [uv](https://docs.astral.sh/uv/) (recommend Python 3.13+)
 - [Azure Functions Core Tools](https://learn.microsoft.com/en-us/azure/azure-functions/functions-run-local)
 - [Azure Developer CLI (`azd`)](https://learn.microsoft.com/en-us/azure/developer/azure-developer-cli/) for Azure deployment
 - Azurite or another `AzureWebJobsStorage` value for timer triggers
