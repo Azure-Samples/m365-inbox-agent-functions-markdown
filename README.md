@@ -1,18 +1,16 @@
-# M365 Inbox Agent: Serverless Agents (Markdown-only)
+# M365 Inbox Agent for Azure Functions (Python) [![Python](https://img.shields.io/badge/Python-3.13-blue.svg)](https://www.python.org/downloads/) [![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://github.com/codespaces/new?repo=Azure-Samples%2Fm365-inbox-agent-functions-python) [![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/<TODO-integrator-fill>)
 
-🔗 [Python (with custom tools) →](https://github.com/Azure-Samples/m365-inbox-agent-functions-python)
-
-**Think of it as [🦞 OpenClaw](https://github.com/openclaw/openclaw) for the business: a skills-driven agent that actually does things, but secured by Azure managed identity and Entra-authorized M365 connectors (no custom code surface to audit).**
+**Think of it as [🦞 OpenClaw](https://github.com/openclaw/openclaw) for the business: a skills-driven agent that actually does things, but secured by Azure managed identity, Entra-authorized M365 connectors, and your own auditable Python functions.**
 
 An inbox-triage sample for the **Azure Functions Serverless Agents Runtime (preview)**. Three timer-triggered agents read a Microsoft 365 inbox, decide what matters, send replies, post urgent alerts to Teams, and suggest rule changes for a human to approve.
 
-This markdown-only variant relies on managed MCP servers for Outlook and Teams through Connector Namespace. The `sample-data/` fixtures are kept as documentation and shape references for what the agents see in production through the Outlook MCP connection.
+The sample also runs locally without Azure: the inbox tools fall back to `sample-data/inbox/*.json`, and outbound actions are written to `out/read-log.txt` so you can see exactly what the agents would have done.
 
-> 📝 Want offline dev with custom Python tools? See the [Python sibling](https://github.com/Azure-Samples/m365-inbox-agent-functions-python). Full comparison at [the bottom](#-markdown-variant-vs-python-variant).
+> 📝 Prefer pure markdown with no custom Python? See the [markdown-only sibling](https://github.com/Azure-Samples/m365-inbox-agent-functions-markdown). Full comparison at [the bottom](#-python-variant-vs-markdown-variant).
 
 ## <img src="https://raw.githubusercontent.com/microsoft/fluentui-system-icons/main/assets/Wrench/SVG/ic_fluent_wrench_24_regular.svg" width="22" align="center"> Prerequisites
 
-- Python 3.13+ (the runtime package requires 3.13). Easiest install: [uv](https://docs.astral.sh/uv/) — `uv python install 3.13`
+- Python 3.13+ (the runtime package requires 3.13). Easiest install: [uv](https://docs.astral.sh/uv/) — `uv python install 3.13`. **`uv` is also required at deploy time** to generate `requirements.txt` from `pyproject.toml` + `uv.lock` (the `azd` `prepackage` hook runs `uv export`).
 - [Azure Functions CLI (v5 preview)](https://learn.microsoft.com/en-us/azure/azure-functions/functions-cli-develop-local?pivots=programming-language-python)
 - [Azure Developer CLI (`azd`)](https://learn.microsoft.com/en-us/azure/developer/azure-developer-cli/) for Azure deployment
 - For production: an Azure subscription, a Microsoft Foundry project/model deployment, and permission to authorize Microsoft 365 connectors
@@ -24,14 +22,14 @@ This markdown-only variant relies on managed MCP servers for Outlook and Teams t
 
 ## <img src="https://raw.githubusercontent.com/microsoft/fluentui-system-icons/main/assets/Shield/SVG/ic_fluent_shield_24_regular.svg" width="22" align="center"> Make it yours (private copy)
 
-Once you start editing rules or running against your real M365 tenant, you'll want a **private** copy. Public forks cannot be made private on GitHub. Use this repo as a template instead: click <kbd>Use this template</kbd> at the top of GitHub and choose **Private**, or with [GitHub CLI](https://cli.github.com/):
+Once you start editing rules, sample inbox data, or running against your real M365 tenant, you'll want a **private** copy. Public forks cannot be made private on GitHub. Use this repo as a template instead: click <kbd>Use this template</kbd> at the top of GitHub and choose **Private**, or with [GitHub CLI](https://cli.github.com/):
 
 ```bash
 OWNER=$(gh api user --jq .login)   # or override with your org
 REPO=my-inbox-agent                # or override with any name
 
 gh repo create "$OWNER/$REPO" \
-  --template Azure-Samples/m365-inbox-agent-functions-markdown \
+  --template Azure-Samples/m365-inbox-agent-functions-python \
   --private --clone
 ```
 
@@ -49,7 +47,7 @@ Even in a private repo, never commit real secrets. This sample uses **managed id
 **Getting upstream updates.** Sync your private copy from this repo with a single GitHub CLI command, then pull locally:
 
 ```bash
-gh repo sync "$OWNER/$REPO" --source Azure-Samples/m365-inbox-agent-functions-markdown
+gh repo sync "$OWNER/$REPO" --source Azure-Samples/m365-inbox-agent-functions-python
 git pull
 ```
 
@@ -57,7 +55,7 @@ The Functions Serverless Agents Runtime is in preview, so expect occasional fixe
 
 ## <img src="https://raw.githubusercontent.com/microsoft/fluentui-system-icons/main/assets/Rocket/SVG/ic_fluent_rocket_24_regular.svg" width="22" align="center"> Quickstart
 
-This markdown-only variant requires a deployed Connector Namespace plus authorized Outlook and Teams MCP connections. There is **no local file fallback by design**; the sample proves the declarative MCP path. To experiment locally without Azure, use the [Python sibling](https://github.com/Azure-Samples/m365-inbox-agent-functions-python), which adds offline tool fallbacks.
+This path proves the agent loop works **without Azure resources or connector authorization**. With MCP endpoints blank, the Python fallback tools read mock mail from `sample-data/inbox/*.json`, classify it, and write the local actions they would have taken to `out/read-log.txt`. You can see reasoning in the `func5 run` terminal and action records in the log. No real email is sent and no Teams post is made.
 
 1. Install the v5 Functions CLI and the Python workload (one-time):
 
@@ -66,43 +64,58 @@ This markdown-only variant requires a deployed Connector Namespace plus authoriz
    func5 setup --features python
    ```
 
-2. Deploy the Function App and managed MCP connectors:
+2. Provision Foundry (no app deploy) so you have an endpoint to point at locally:
 
    ```bash
    azd auth login
-   azd env set TO_EMAIL recipient@example.com
-   azd up
+   azd provision    # ~6–10 min: creates AI Services, model deployment, MI, optional connectors
    ```
 
-3. Authorize the Outlook and Teams connectors using the Connector Namespace portal URL from the deployment outputs.
-
-4. Provision Foundry (no app deploy) and hydrate `local.settings.json` from azd outputs. Auth uses your `az login` identity (no keys):
+3. Hydrate `local.settings.json` from azd outputs. Auth uses your `az login` identity (no keys):
 
    Bash (macOS / Linux / WSL):
 
    ```bash
-   azd auth login
-   azd provision                                   # ~6–10 min
-   az login                                        # one-time, for DefaultAzureCredential
+   az login                                # one-time
    ./infra/scripts/hydrate-local-settings.sh
-   func5 run
    ```
 
-   Windows PowerShell — same flow, just swap the hydrate step:
+   Windows PowerShell:
 
    ```powershell
+   az login                                # one-time
    pwsh -File ./infra/scripts/hydrate-local-settings.ps1
    ```
 
-   > `pwsh -File <path>` runs without triggering Windows ExecutionPolicy — no `Set-ExecutionPolicy` needed.
+   > `pwsh -File <path>` runs the script without triggering Windows ExecutionPolicy — no `Set-ExecutionPolicy` needed.
 
-5. Trigger immediately from terminal 2 instead of waiting for the timer:
+3. Terminal 1: start the Functions host:
+
+   ```bash
+   func5 run
+   ```
+
+4. Terminal 2: trigger the timer immediately instead of waiting five minutes:
 
    ```bash
    uv run python chat.py   # then pick 1 for inbox-triage
    ```
 
-Success means real Microsoft 365 side effects: an Outlook reply or a Teams channel post. Keep the `func5 run` terminal visible for local logs, and use Application Insights `traces` for deployed runs.
+5. Verify the offline action log:
+
+   ```bash
+   tail -n 20 out/read-log.txt
+   ```
+
+Success looks like this:
+
+```text
+[2026-06-03T00:00:00+00:00] inbox-triage list_inbox returned 5 messages from sample-data/inbox
+[2026-06-03T00:00:01+00:00] inbox-triage match_rule matched "URGENT: Customer renewal blocker needs decision today" as post_teams (VIP contact)
+[2026-06-03T00:00:02+00:00] inbox-triage post_teams (offline) channel=<TEAMS_CHANNEL_ID> summary="🚨 VIP Alert: Customer renewal blocker needs decision today..."
+```
+
+Also keep the `func5 run` terminal visible; the run summary shows what the agent read, how it classified each message, and which tool fallback it dispatched.
 
 ## <img src="https://raw.githubusercontent.com/microsoft/fluentui-system-icons/main/assets/Code/SVG/ic_fluent_code_24_regular.svg" width="22" align="center"> Source Code
 
@@ -110,7 +123,7 @@ Success means real Microsoft 365 side effects: an Outlook reply or a Teams chann
 README.md                         This guide.
 chat.py                           Friendly local client for manually triggering timer agents.
 .env.example                      Environment variable reference for local and deployed runs.
-sample-data/inbox.json            Graph-shaped inbox fixture used as an Outlook MCP shape reference.
+sample-data/inbox.json            Offline Graph-shaped inbox fixture used by local fallback tools.
 sample-data/inbox/*.json          Individual mock inbox messages for scenarios and tests.
 function_app.py                   Minimal Functions entry point that loads the agents runtime.
 inbox-triage.agent.md             Timer agent that classifies inbox items and takes action.
@@ -118,8 +131,8 @@ daily-briefing.agent.md           Timer agent that summarizes inbox and calendar
 weekly-rule-suggestions.agent.md  Timer agent that proposes rule updates for human review.
 agents.config.yaml                Default model and runtime configuration.
 mcp.json                          Outlook and Teams MCP server configuration.
+tools/                            Local Python tools and fallback action logging.
 skills/vip-rules.md               Editable triage policy used by the agents.
-skills/*.md                       Reusable markdown skills that describe MCP usage patterns.
 infra/                            Azure resources created by azd.
 ```
 
@@ -216,22 +229,20 @@ flowchart TD
 
 ## <img src="https://raw.githubusercontent.com/microsoft/fluentui-system-icons/main/assets/Flowchart/SVG/ic_fluent_flowchart_24_regular.svg" width="22" align="center"> How the building blocks work
 
-| Block | MCP action | Skill | Agent |
-|---|---|---|---|
-| Trigger on inbox | (timer in agent frontmatter) | `inbox-poll.md` | inbox-triage |
-| Read inbox | `outlook.list_messages` | `inbox-read.md` | all 3 |
-| Send email | `outlook.send_mail` / `reply_mail` | `email-reply.md` | all 3 |
-| Post to Teams | `teams.post_channel_message` | `teams-post.md` | inbox-triage, daily-briefing |
-
-Managed connector action names may vary slightly as the Outlook and Teams MCP servers evolve. Use the action names published by the connected MCP server when they differ from the examples above.
+| Building block | Tool that implements it | Skill that explains it | Agent that uses it |
+| --- | --- | --- | --- |
+| Trigger on inbox | Timer trigger declared on `inbox-triage.agent.md`; local manual runs use `POST /admin/functions/inbox-triage` | `skills/vip-rules.md` explains what counts as important inbox work | `inbox-triage` |
+| Read inbox | `tools/list_inbox.py` reads Microsoft Graph through Outlook MCP when configured, or `sample-data/inbox.json` offline | `skills/vip-rules.md` describes VIP, incident, FYI, and action-required handling | `inbox-triage`, `daily-briefing`, `weekly-rule-suggestions` |
+| Send email | Outlook MCP `sendMail` through the Connector Namespace; local fallback logs the draft action | `skills/vip-rules.md` explains when to draft or send a reply | `inbox-triage` |
+| Post to Teams | Teams MCP channel-post tool through the Connector Namespace; local fallback logs the Teams alert | `skills/vip-rules.md` explains escalation criteria | `inbox-triage`, `daily-briefing` |
 
 ## <img src="https://raw.githubusercontent.com/microsoft/fluentui-system-icons/main/assets/Beaker/SVG/ic_fluent_beaker_24_regular.svg" width="22" align="center"> Scenarios
 
 ### <img src="https://raw.githubusercontent.com/microsoft/fluentui-system-icons/main/assets/Star/SVG/ic_fluent_star_24_regular.svg" width="22" align="center"> 1. VIP urgent mail posts to Teams
 
-**Goal:** verify the agent recognizes VIP urgency and posts to the authorized Teams channel.
+**Goal:** verify the agent recognizes VIP urgency and routes to Teams. In Python offline mode, verify the local log; with connectors authorized, verify the real Teams post.
 
-**Setup:** send or keep a similar unread message in the connected Outlook inbox. `sample-data/inbox/01-vip-urgent.json` shows the expected shape.
+**Setup:** the message is already in `sample-data/inbox/01-vip-urgent.json` (no action needed).
 
 <details><summary>What's in the message</summary>
 
@@ -251,15 +262,20 @@ Managed connector action names may vary slightly as the Outlook and Teams MCP se
 uv run python chat.py   # then pick 1
 ```
 
+**What you should see (offline / Python):**
+- In the `func5 run` terminal: lines like `inbox-triage: classified URGENT... as vip` and `dispatching Teams alert via tool fallback`.
+- In `out/read-log.txt`: `[<ts>] inbox-triage post_teams (offline) channel=<TEAMS_CHANNEL_ID> summary="🚨 VIP Alert..."`.
+- Verify with: `tail -n 20 out/read-log.txt`.
+
 **What you should see (deployed / connectors authorized):**
 - A real message appears in the configured Teams channel within about one minute.
-- The `func5 run` terminal or Application Insights `traces` shows a VIP classification and Teams channel-post MCP call.
+- Application Insights `traces` shows the VIP decision and Teams post.
 
 ### <img src="https://raw.githubusercontent.com/microsoft/fluentui-system-icons/main/assets/Warning/SVG/ic_fluent_warning_24_regular.svg" width="22" align="center"> 2. Incident alert becomes a briefing item
 
-**Goal:** verify a P1 incident is escalated to Teams and summarized in the daily briefing.
+**Goal:** verify the agent treats a P1 incident as urgent and includes it in the next briefing.
 
-**Setup:** send or keep a similar unread incident message in Outlook. `sample-data/inbox/03-incident-alert.json` shows the expected shape.
+**Setup:** the message is already in `sample-data/inbox/03-incident-alert.json` (no action needed).
 
 <details><summary>What's in the message</summary>
 
@@ -279,16 +295,20 @@ uv run python chat.py   # then pick 1
 uv run python chat.py   # pick 1 for triage, then pick 2 for daily-briefing
 ```
 
+**What you should see (offline / Python):**
+- In the `func5 run` terminal: incident classification plus a briefing summary that names Checkout API.
+- In `out/read-log.txt`: `post_teams (offline)` for the incident and `send_reply (offline)` for the daily briefing.
+- Verify with: `tail -n 20 out/read-log.txt` and open the newest `out/*.eml`.
+
 **What you should see (deployed / connectors authorized):**
 - A Teams alert appears for the P1 incident.
-- The `TO_EMAIL` mailbox receives a briefing with severity, product, impact, and owner ask.
-- Application Insights `traces` shows the incident decision and briefing send.
+- The configured `TO_EMAIL` mailbox receives a daily briefing that includes severity, product, impact, and owner ask.
 
 ### <img src="https://raw.githubusercontent.com/microsoft/fluentui-system-icons/main/assets/Checkmark/SVG/ic_fluent_checkmark_24_regular.svg" width="22" align="center"> 3. Action-required mail gets a reply
 
-**Goal:** verify the agent recognizes a response deadline and sends or drafts a grounded Outlook reply.
+**Goal:** verify the agent recognizes a response deadline and prepares a grounded reply.
 
-**Setup:** send or keep a similar unread action-required message in Outlook. `sample-data/inbox/05-action-required.json` shows the expected shape.
+**Setup:** the message is already in `sample-data/inbox/05-action-required.json` (no action needed).
 
 <details><summary>What's in the message</summary>
 
@@ -308,9 +328,14 @@ uv run python chat.py   # pick 1 for triage, then pick 2 for daily-briefing
 uv run python chat.py   # then pick 1
 ```
 
+**What you should see (offline / Python):**
+- In the `func5 run` terminal: `action-required` classification and reply planning.
+- In `out/read-log.txt`: `[<ts>] inbox-triage send_reply (offline) to=priya.patel@contoso.example subject="..."`.
+- Verify with: `tail -n 20 out/read-log.txt` and open the newest matching `out/*.eml`.
+
 **What you should see (deployed / connectors authorized):**
 - Outlook sends or drafts a concise reply that acknowledges Friday and lists next steps.
-- The `func5 run` terminal or Application Insights `traces` shows the reply decision and Outlook MCP action.
+- Application Insights `traces` shows the reply decision.
 
 ## <img src="https://raw.githubusercontent.com/microsoft/fluentui-system-icons/main/assets/Edit/SVG/ic_fluent_edit_24_regular.svg" width="22" align="center"> Customizing Rules
 
@@ -324,7 +349,9 @@ The `weekly-rule-suggestions` agent reviews recent decisions and suggests small 
 
 ## <img src="https://raw.githubusercontent.com/microsoft/fluentui-system-icons/main/assets/Cloud/SVG/ic_fluent_cloud_24_regular.svg" width="22" align="center"> Choosing a model provider
 
-For Bring Your Own Key / Bring Your Own Model scenarios, configure these values locally or let `azd up` wire them from Bicep outputs:
+The agents runtime auto-selects a provider from environment variables. This sample defaults to **Microsoft Foundry with managed identity** — `azd provision` creates the AI Services account + model deployment, and `infra/scripts/hydrate-local-settings.sh` copies the outputs into `local.settings.json`. No API keys.
+
+**Local + production (default) — Foundry + Entra ID:**
 
 ```bash
 AZURE_FUNCTIONS_AGENTS_PROVIDER=foundry
@@ -332,11 +359,13 @@ FOUNDRY_PROJECT_ENDPOINT=https://<your-ai-services>.services.ai.azure.com/api/pr
 FOUNDRY_MODEL=gpt-5.4-mini
 ```
 
-`azd up` wires these for you (`infra/scripts/hydrate-local-settings.sh` copies them into `local.settings.json` for local dev). Auth uses managed identity in production and `DefaultAzureCredential` (`az login`) locally — no keys.
+Local auth flows through `DefaultAzureCredential` (your `az login`); deployed auth uses the function app's user-assigned managed identity (`AZURE_CLIENT_ID`).
+
+**Azure OpenAI direct (alternative):** set `AZURE_OPENAI_ENDPOINT` and `AZURE_OPENAI_DEPLOYMENT`. Auth defaults to managed identity; set `AZURE_OPENAI_API_KEY` if you must use keys.
 
 > **Note on GitHub Models for free local dev:** the runtime calls the OpenAI **Responses API** (`/responses`), which GitHub Models does not implement (`/chat/completions` only). Tracking with the runtime team.
 
-Set connector endpoint values for deployed Microsoft 365 actions.
+Keep M365 connector endpoint values blank for offline sample-data runs; set them for deployed Microsoft 365 actions.
 
 ## <img src="https://raw.githubusercontent.com/microsoft/fluentui-system-icons/main/assets/Broom/SVG/ic_fluent_broom_24_regular.svg" width="22" align="center"> Cleanup
 
@@ -353,7 +382,7 @@ azd down --purge
 | Connector authorization fails | Reopen the Connector Namespace portal URL from deployment outputs, sign in with the mailbox/channel owner, and reauthorize Outlook and Teams. |
 | MCP endpoint missing | Run `azd env get-values` and confirm `OUTLOOK_MCP_ENDPOINT` and `TEAMS_MCP_ENDPOINT` are populated. If blank, rerun `azd up` and check Connector Namespace deployment logs. |
 | Timer is not firing | Confirm the Functions host shows the timer trigger loaded at startup. The v5 CLI starts Azurite automatically; pass `--no-azurite` only if you intentionally point `AzureWebJobsStorage` elsewhere. |
-| Local action calls fail | Expected until Outlook and Teams MCP endpoints are configured and authorized. Use local runs for markdown/frontmatter validation, or use the Python sibling for offline sample-data fallback. |
+| Local run cannot reach Azure | Leave MCP endpoint variables blank and use option 1 in `chat.py`; the tools should read `sample-data/inbox.json` and log actions to `out/read-log.txt`. |
 | Manual trigger returns 404 | Confirm the Functions host is running and agent function names are `inbox-triage`, `daily-briefing`, and `weekly-rule-suggestions`. |
 
 ## <img src="https://raw.githubusercontent.com/microsoft/fluentui-system-icons/main/assets/Book/SVG/ic_fluent_book_24_regular.svg" width="22" align="center"> Learn More
@@ -365,18 +394,18 @@ azd down --purge
 - [Microsoft Teams connector reference](https://learn.microsoft.com/en-us/connectors/teams/)
 - [Azure Functions timer trigger](https://learn.microsoft.com/en-us/azure/azure-functions/functions-bindings-timer)
 
-## <img src="https://raw.githubusercontent.com/microsoft/fluentui-system-icons/main/assets/Mail/SVG/ic_fluent_mail_24_regular.svg" width="22" align="center"> Markdown variant vs Python variant
+## <img src="https://raw.githubusercontent.com/microsoft/fluentui-system-icons/main/assets/Mail/SVG/ic_fluent_mail_24_regular.svg" width="22" align="center"> Python variant vs Markdown variant
 
 Both repos define the **same three agents, same skills, same Bicep, same governance**. The difference is where the logic lives.
 
-| | **This repo (Markdown)** | [Python sibling](https://github.com/Azure-Samples/m365-inbox-agent-functions-python) |
+| | **This repo (Python)** | [Markdown sibling](https://github.com/Azure-Samples/m365-inbox-agent-functions-markdown) |
 |---|---|---|
-| Agent logic | LLM reasons from `.agent.md` + skills text | Same, **plus** custom `tools/*.py` functions |
-| `tools/` directory | ❌ none (by design) | ✅ ~5 Python tools (rule matching, triage actions, etc.) |
-| I/O path | MCP only (Outlook & Teams managed connectors) | MCP **or** local file fallback when MCP env vars unset |
-| Offline dev | Requires provisioned MCP | `uv run python chat.py` reads `sample-data/inbox/*.json`, writes `.eml`/`.md` to `out/` |
-| `function_app.py` | One line: `app = create_function_app()` | Identical one line (tools auto-discovered) |
-| Hand-written Python | ~1 line | ~1 line + ~300 across `tools/` |
+| Agent logic | LLM reasons from `.agent.md` + skills text, **plus** custom `tools/*.py` functions | Same, but **without** `tools/` |
+| `tools/` directory | ✅ ~5 Python tools (rule matching, triage actions, etc.) | ❌ none (by design) |
+| I/O path | MCP **or** local file fallback when MCP env vars unset | MCP only (Outlook & Teams managed connectors) |
+| Offline dev | `uv run python chat.py` reads `sample-data/inbox/*.json`, writes `.eml`/`.md` to `out/` | Requires provisioned MCP |
+| `function_app.py` | One line: `app = create_function_app()` (tools auto-discovered) | Identical one line |
+| Hand-written Python | ~1 line + ~300 across `tools/` | ~1 line |
 
-**Pick this repo if** you want to see the runtime's declarative promise: a production-shaped M365 agent with effectively zero hand-written code.
-**Pick the Python sibling if** you want a code escape hatch for offline hacking, deterministic rule matching, or learning the SDK.
+**Pick this repo if** you want a code escape hatch for offline hacking, deterministic rule matching, or learning the SDK.
+**Pick the markdown sibling if** you want to see the runtime's declarative promise: a production-shaped M365 agent with effectively zero hand-written code.
