@@ -73,6 +73,8 @@ This markdown-only variant requires a deployed Connector Namespace plus authoriz
 
 4. Provision Foundry (no app deploy) and hydrate `local.settings.json` from azd outputs. Auth uses your `az login` identity (no keys):
 
+   Bash (macOS / Linux / WSL):
+
    ```bash
    azd auth login
    azd provision                                   # ~6–10 min
