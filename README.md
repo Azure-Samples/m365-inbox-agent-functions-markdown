@@ -81,6 +81,14 @@ This markdown-only variant requires a deployed Connector Namespace plus authoriz
    func5 run
    ```
 
+   Windows PowerShell — same flow, just swap the hydrate step:
+
+   ```powershell
+   pwsh -File ./scripts/hydrate-local-settings.ps1
+   ```
+
+   > `pwsh -File <path>` runs without triggering Windows ExecutionPolicy — no `Set-ExecutionPolicy` needed.
+
 5. Trigger immediately from terminal 2 instead of waiting for the timer:
 
    ```bash
