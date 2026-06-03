@@ -16,6 +16,29 @@ This markdown-only variant relies on managed MCP servers for Outlook and Teams t
 - Azurite or another `AzureWebJobsStorage` value for timer triggers
 - For production: an Azure subscription, a Microsoft Foundry project/model deployment, and permission to authorize Microsoft 365 connectors
 
+## <img src="https://raw.githubusercontent.com/microsoft/fluentui-system-icons/main/assets/Shield/SVG/ic_fluent_shield_24_regular.svg" width="22" align="center"> Make it yours (private copy)
+
+Once you start editing rules or running against your real M365 tenant, you'll want a **private** copy — public forks cannot be made private on GitHub.
+
+Two safe ways to do that:
+
+1. **Use this template** (recommended) — click <kbd>Use this template</kbd> at the top of this repo and choose **Private**. This creates an independent repo with no fork relationship, so accidental PRs back to `Azure-Samples` are not possible.
+2. **Clone, then push to a new private repo:**
+   ```bash
+   git clone https://github.com/Azure-Samples/m365-inbox-agent-functions-markdown.git my-inbox-agent
+   cd my-inbox-agent
+   gh repo create my-org/my-inbox-agent --private --source=. --remote=origin --push
+   ```
+
+Files most likely to contain personal/tenant information:
+
+- `skills/vip-rules.md`, `skills/triage-rules.md` — your VIPs and triage logic
+- `sample-data/inbox/*.json` — any real mail you paste in for testing
+- `local.settings.json`, `.env` — secrets and endpoints (**already gitignored**)
+- `infra/main.parameters.json` — subscription/tenant-specific values if you customize
+
+Even in a private repo, never commit real secrets. Use Key Vault references or `azd env set` for production values.
+
 ## <img src="https://raw.githubusercontent.com/microsoft/fluentui-system-icons/main/assets/Rocket/SVG/ic_fluent_rocket_24_regular.svg" width="22" align="center"> Quickstart
 
 This markdown-only variant requires a deployed Connector Namespace plus authorized Outlook and Teams MCP connections. There is **no local file fallback by design**; the sample proves the declarative MCP path. To experiment locally without Azure, use the [Python sibling](https://github.com/Azure-Samples/m365-inbox-agent-functions-python), which adds offline tool fallbacks.
