@@ -81,7 +81,7 @@ This markdown-only variant requires a deployed Connector Namespace plus authoriz
 5. Trigger immediately from terminal 2 instead of waiting for the timer:
 
    ```bash
-   python chat.py   # then pick 1 for inbox-triage
+   uv run python chat.py   # then pick 1 for inbox-triage
    ```
 
 Success means real Microsoft 365 side effects: an Outlook reply or a Teams channel post. Keep the `func5 run` terminal visible for local logs, and use Application Insights `traces` for deployed runs.
@@ -223,7 +223,7 @@ Managed connector action names may vary slightly as the Outlook and Teams MCP se
 **Run:**
 
 ```bash
-python chat.py   # then pick 1
+uv run python chat.py   # then pick 1
 ```
 
 **What you should see (deployed / connectors authorized):**
@@ -251,7 +251,7 @@ python chat.py   # then pick 1
 **Run:**
 
 ```bash
-python chat.py   # pick 1 for triage, then pick 2 for daily-briefing
+uv run python chat.py   # pick 1 for triage, then pick 2 for daily-briefing
 ```
 
 **What you should see (deployed / connectors authorized):**
@@ -280,7 +280,7 @@ python chat.py   # pick 1 for triage, then pick 2 for daily-briefing
 **Run:**
 
 ```bash
-python chat.py   # then pick 1
+uv run python chat.py   # then pick 1
 ```
 
 **What you should see (deployed / connectors authorized):**
@@ -344,7 +344,7 @@ Both repos define the **same three agents, same skills, same Bicep, same governa
 | Agent logic | LLM reasons from `.agent.md` + skills text | Same, **plus** custom `tools/*.py` functions |
 | `tools/` directory | ❌ none (by design) | ✅ ~5 Python tools (rule matching, triage actions, etc.) |
 | I/O path | MCP only (Outlook & Teams managed connectors) | MCP **or** local file fallback when MCP env vars unset |
-| Offline dev | Requires provisioned MCP | `python chat.py` reads `sample-data/inbox/*.json`, writes `.eml`/`.md` to `out/` |
+| Offline dev | Requires provisioned MCP | `uv run python chat.py` reads `sample-data/inbox/*.json`, writes `.eml`/`.md` to `out/` |
 | `function_app.py` | One line: `app = create_function_app()` | Identical one line (tools auto-discovered) |
 | Hand-written Python | ~1 line | ~1 line + ~300 across `tools/` |
 
