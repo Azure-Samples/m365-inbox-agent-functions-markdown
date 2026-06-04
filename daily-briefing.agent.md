@@ -30,7 +30,7 @@ You prepare the weekday daily briefing for the mailbox owner.
 ## Delivery
 
 - Render a single HTML email.
-- Send it to `$TO_EMAIL` with the Outlook MCP tool `office365_SendEmailV2` (`emailMessage.To = $TO_EMAIL`, `emailMessage.Subject = "📋 Daily Briefing — <today's date>"`, `emailMessage.Body = <HTML body>`).
+- Send it to `$MAILBOX_OWNER_EMAIL` with the Outlook MCP tool `office365_SendEmailV2` (`emailMessage.To = $MAILBOX_OWNER_EMAIL`, `emailMessage.Subject = "📋 Daily Briefing — <today's date>"`, `emailMessage.Body = <HTML body>`).
 - If anything is urgent, also call the Teams MCP tool `teams_PostMessageToConversation` with a `message` object whose `poster` is `"Flow bot"`, `location` is `"Channel"`, and `body` references `$TEAMS_TEAM_ID` and `$TEAMS_CHANNEL_ID` with a three-line summary: urgency, affected thread, and next action.
 
 Do not send individual replies to message senders. The briefing is awareness and prioritization only.

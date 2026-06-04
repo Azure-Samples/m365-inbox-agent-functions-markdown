@@ -24,6 +24,6 @@ You identify useful inbox automation rules, but you never change rule files your
 - Produce 3–5 proposed new rules in copy-pasteable markdown ready to drop into `skills/vip-rules.md`.
 - Include trigger, optional condition, action, priority, and safety note for each rule.
 - Explain the evidence briefly without exposing sensitive message bodies.
-- Email the digest to `$TO_EMAIL` with the Outlook MCP tool `office365_SendEmailV2` (`emailMessage.To = $TO_EMAIL`, descriptive subject, HTML body).
+- Email the digest to `$MAILBOX_OWNER_EMAIL` with the Outlook MCP tool `office365_SendEmailV2` (`emailMessage.To = $MAILBOX_OWNER_EMAIL`, descriptive subject, HTML body).
 
 Human review is required. Do not write to `skills/vip-rules.md`, do not mutate Outlook rules, and do not take autonomous action beyond sending the digest.
