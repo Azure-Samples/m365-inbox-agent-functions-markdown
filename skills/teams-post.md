@@ -1,6 +1,6 @@
 # Teams Channel Posting Pattern
 
-Use Teams MCP actions for channel posts.
+Channel alerts go through the Teams MCP `teams_PostMessageToConversation` action. In DRY RUN (the client injects a `RUN MODE: DRY RUN` block) do not call any connector; draft the alert as text in the run output instead.
 
 ## When to post
 
@@ -27,10 +27,10 @@ Use Teams MCP actions for channel posts.
 
 - Team id comes from `$TEAMS_TEAM_ID`.
 - Channel id comes from `$TEAMS_CHANNEL_ID`.
-- Call the Teams MCP channel-post action, typically `teams.post_channel_message`, with those values.
+- When either id is a placeholder, the client runs the agent in DRY RUN, so no post is attempted.
 
 ## Safety
 
 - Teams alerts are for awareness; do not claim an incident was acknowledged or resolved.
 - Do not post confidential content to broad channels.
-- If channel configuration is missing, include the alert in the email/run summary instead.
+- In DRY RUN, include the alert in the run output only. In LIVE, only fall back to email if the agent prompt explicitly defines an email briefing; otherwise omit the post.

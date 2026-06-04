@@ -1,6 +1,6 @@
 # Safe Email Reply Pattern
 
-Use Outlook MCP actions to send or reply.
+Replies go through the Outlook MCP `office365_SendEmailV2` action. In DRY RUN (the client injects a `RUN MODE: DRY RUN` block) do not call any connector; draft the reply as text in the run output instead.
 
 ## Before replying
 
@@ -12,7 +12,7 @@ Use Outlook MCP actions to send or reply.
 
 ## Reply content
 
-- Keep the subject threaded as `Re: <original subject>` unless sending a digest.
+- Keep the subject threaded with the per-agent prompt's prefix (for example `[DEMO] Re: <original subject>`) unless sending a digest.
 - Be concise, specific, and helpful.
 - Avoid commitments about dates, pricing, roadmap, legal terms, security posture, or incident status unless source content explicitly supports them.
 - Include a next step when useful.
@@ -20,10 +20,10 @@ Use Outlook MCP actions to send or reply.
 
 ## Execution order
 
-1. Send a threaded response with the Outlook MCP reply action, typically `outlook.reply_mail`.
-2. For digests or new messages, use the Outlook MCP send action, typically `outlook.send_mail`.
-3. After a successful send, mark the original message read with the Outlook MCP update action, typically `outlook.update_message`.
-4. Log the action in the run summary.
+1. In DRY RUN, draft the reply as text and stop; call no connector.
+2. In LIVE, call `office365_SendEmailV2` with `To`, the prompt's `Subject` prefix, and an HTML body.
+3. After a successful send, mark the original message read with `office365_MarkAsRead_V3`.
+4. Record the action in the run summary.
 
 ## Never do this
 
