@@ -9,3 +9,4 @@ Deeper guides for the M365 Inbox Agent (Markdown). Start with the [README](../RE
 - **[Configuration &amp; deployment](configuration.md)** — going live with real M365, what `azd up` provisions, the source tree, and cleanup.
 - **[Customize &amp; make it yours](customize.md)** — private copy, editing rules, upstream sync, and rule suggestions.
 - **[Troubleshooting &amp; reference](troubleshooting.md)** — common errors, the connector troubleshooting table, and Learn More links.
+- **[Deploying on Python 3.13 (Flex Consumption)](deploy-python-313.md)** — workaround for the Flex remote build picking Python 3.11.8 ([Azure/azure-dev#8538](https://github.com/Azure/azure-dev/issues/8538)).
