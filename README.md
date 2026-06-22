@@ -1,3 +1,8 @@
+> [!IMPORTANT]
+> **This repo has moved.** Active development is happening in the sibling repo, which pairs plain-English Markdown with Python code. We're maintaining only that one for now, until there is demand for a Markdown-only version or more languages.
+>
+> See you over at the active repo: **https://github.com/Azure-Samples/m365-inbox-serverless-agent-python**
+
 # M365 Inbox Agent for Azure Functions (Markdown) [![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://github.com/codespaces/new?repo=Azure-Samples%2Fm365-inbox-agent-functions-markdown)
 
 An AI agent that triages your Microsoft 365 inbox: it escalates urgent mail to Teams, drafts replies, and emails you a daily briefing — all following rules you write in plain markdown.
@@ -6,7 +11,7 @@ An AI agent that triages your Microsoft 365 inbox: it escalates urgent mail to T
 
 Run it locally in minutes against sample data, point it at your real inbox, then deploy it so it runs on its own.
 
-> 🐍 Want a code escape hatch (a deterministic Python classifier and offline hacking)? See the [Python sibling](https://github.com/Azure-Samples/m365-inbox-agent-functions-python) ([how they differ](docs/how-it-works.md#python-vs-markdown)).
+> 🐍 Want a code escape hatch (a deterministic Python classifier and offline hacking)? See the [Python sibling](https://github.com/Azure-Samples/m365-inbox-serverless-agent-python) ([how they differ](docs/how-it-works.md#python-vs-markdown)).
 
 ## What it does for you
 
